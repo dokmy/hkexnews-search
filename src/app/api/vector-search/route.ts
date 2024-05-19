@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
 
     // Embed the query using OpenAI API
     const response = await openai.embeddings.create({
-      model: 'text-embedding-3-small',
+      model: 'text-embedding-ada-002',
       input: query,
     });
 

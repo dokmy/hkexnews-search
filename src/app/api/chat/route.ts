@@ -4,10 +4,10 @@ import { openai } from '@ai-sdk/openai';
 import { createOpenAI } from '@ai-sdk/openai';
 import { getContext } from '@/app/utils/context';
 
-const fireworks = createOpenAI({
-  apiKey: process.env.FIREWORKS_API_KEY ?? '',
-  baseURL: 'https://api.fireworks.ai/inference/v1',
-});
+// const fireworks = createOpenAI({
+//   apiKey: process.env.FIREWORKS_API_KEY ?? '',
+//   baseURL: 'https://api.fireworks.ai/inference/v1',
+// });
 
 export async function POST(req: Request) {
   try {
@@ -25,7 +25,7 @@ export async function POST(req: Request) {
         START CONTEXT BLOCK
         ${context}
         END OF CONTEXT BLOCK
-        You are a AI legal assistant for lawyers in Hong Kong. Please cite relevant legal sources or cases where applicable. Do not make assumptions beyond the provided context. 
+        You are a research assistant for corporate lawyers in Hong Kong. Please cite relevant legal sources or cases where applicable. Do not make assumptions beyond the provided context. 
         
         Your responses will be rendered using ReactMarkdown, so please use Markdown syntax for formatting as much as possible to make your responses more readable. If necessary, use bullet points, h1, h2, h3 to structure your responses. Also, use bold and italics to emphasize key points.
         
@@ -34,15 +34,15 @@ export async function POST(req: Request) {
         },
       ]
 
-    const model = fireworks('accounts/fireworks/models/llama-v3-70b-instruct');
+    // const model = fireworks('accounts/fireworks/models/llama-v3-70b-instruct');
+    const model = openai.chat('gpt-4o');
 
     // new AI SDK
     const result = await streamText({
-      // model: openai('gpt-4-0125-preview'),
-      model: model,
+        model: model,
         system: initialPrompt[0].content,
-      messages: messages,
-      maxTokens: 1000
+        messages: messages,
+        maxTokens: 1000
     })
 
     const stream = result.toAIStream()

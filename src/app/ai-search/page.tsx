@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import { Message } from "ai";
 import { Input } from "@/components/ui/input";
 import { Play, Loader2 } from "lucide-react";
 import PineconeResult from "@/components/PineconeResult";
@@ -19,6 +20,10 @@ interface dataToCCR {
   URL: string;
 }
 
+interface chatArgs {
+  initialInput?: string;
+}
+
 const AISearch: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -26,10 +31,19 @@ const AISearch: React.FC = () => {
   const [shownUrl, setShownUrl] = useState("");
   const [dataToCCR, setDataToCCR] = useState({} as dataToCCR);
   const [resetMatchesKey, setResetMatchesKey] = useState(0);
+  const [chatArgs, setChatArgs] = useState<chatArgs>({});
 
   useEffect(() => {
     setResetMatchesKey((prevKey) => prevKey + 1);
   }, [shownUrl]);
+
+  useEffect(() => {
+    setChatArgs({
+      initialInput:
+        "Please first summarise this document for me and then find me exactly the paragrpahs or sentences that are related to this: " +
+        searchQuery,
+    });
+  }, [searchQuery]);
 
   const resetMatches = () => {
     setResetMatchesKey((prevKey) => prevKey + 1);
@@ -95,7 +109,7 @@ const AISearch: React.FC = () => {
         </div>
       </div>
       <div className="mt-20 px-2 flex flex-row space-x-5">
-        <div className="flex flex-col space-y-3 w-1/4">
+        <div className="flex flex-col space-y-3 w-1/5">
           {searchResults.map((result, index) => (
             <PineconeResult
               key={index}
@@ -105,17 +119,10 @@ const AISearch: React.FC = () => {
             />
           ))}
         </div>
-        <div className="w-1/2">
+        <div className="w-4/5">
           {shownUrl && (
-            <div
-              style={{
-                display: "flex",
-                height: "100%",
-                width: "100%",
-              }}
-              className="border-2 border-slate-900"
-            >
-              <div
+            <div className="border-2 border-slate-900 w-full">
+              {/* <div
                 style={{
                   borderRight: "1px solid rgba(0, 0, 0, .2)",
                   flex: "0 0 10rem",
@@ -127,8 +134,8 @@ const AISearch: React.FC = () => {
                   searchPluginInstance={searchPluginInstance}
                   resetMatches={resetMatches}
                 />
-              </div>
-              <div style={{ flex: 1 }}>
+              </div> */}
+              <div className="">
                 <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.4.120/build/pdf.worker.min.js">
                   <Viewer
                     fileUrl={shownUrl}
@@ -142,9 +149,14 @@ const AISearch: React.FC = () => {
             </div>
           )}
         </div>
-        <div className="w-1/4">
-          {searchResults.length > 0 && (
-            <ChatComponentReady data={dataToCCR} query={searchQuery} />
+        <div className="w-full">
+          {searchResults.length > 0 && shownUrl && (
+            <ChatComponentReady
+              data={dataToCCR}
+              query={searchQuery}
+              key={shownUrl}
+              chatArgs={chatArgs}
+            />
           )}
         </div>
       </div>

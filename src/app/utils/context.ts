@@ -1,14 +1,11 @@
 import OpenAI from "openai";
 import { Pinecone } from '@pinecone-database/pinecone';
+import { encoding_for_model } from 'tiktoken';
 
 const openai = new OpenAI();
 
-interface neutral_cit_filter {
-  neutral_cit: string
-}
-
 // The function `getContext` is used to retrieve the context of a given message
-export const getContext = async (message: string, filter:string, maxTokens = 25000): Promise<any> => {
+export const getContext = async (message: string, filter:string, maxTokens = 7000): Promise<any> => {
 
   // Get the embeddings of the input message
   const response = await openai.embeddings.create({
@@ -58,10 +55,19 @@ export const getContext = async (message: string, filter:string, maxTokens = 250
     }
   
     text_array.push(text);
-    // console.log(text_array);
   });
 
-  const context_text = text_array.join("\n").substring(0, maxTokens)
-  console.log("Context.ts -  Here is the context text that I will send back to the API:\n" + context_text)
-  return context_text
+  const combinedText = text_array.join('\n');
+
+  // Tokenize the combined text and truncate to the desired maxTokens
+  const encoding = encoding_for_model('text-embedding-ada-002');
+  const tokens = encoding.encode(combinedText);
+
+  // Truncate to maxTokens
+  const truncatedTokens = tokens.slice(0, maxTokens);
+  const truncatedText = encoding.decode(truncatedTokens);
+
+  console.log('Context.ts - Number of tokens in combined text: ' + tokens.length);
+//   console.log('Context.ts - Here is the context text that I will send back to the API:\n' + truncatedText);
+  return truncatedText;
 }

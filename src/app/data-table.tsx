@@ -1,11 +1,11 @@
-"use client"
+"use client";
 
 import {
   flexRender,
   getCoreRowModel,
   getPaginationRowModel,
   useReactTable,
-} from "@tanstack/react-table"
+} from "@tanstack/react-table";
 
 import {
   Table,
@@ -14,12 +14,12 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { meilisearchClient } from "@/lib/meilisearch"
+} from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { meilisearchClient } from "@/lib/meilisearch";
 import { useEffect, useState } from "react";
-import { Organization, columns } from "./columns"
+import { News, columns } from "./columns";
 
 function truncate(text: string, length: number) {
   if (text.length <= length) {
@@ -31,16 +31,17 @@ function truncate(text: string, length: number) {
 
 export function DataTable() {
   const [query, setQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<Array<Organization> | any>();
+  const [searchResults, setSearchResults] = useState<Array<News> | any>();
 
-  const index = meilisearchClient.getIndex("organizations");
+  const index = meilisearchClient.getIndex("hkexnews_test");
 
   const table = useReactTable({
     data: searchResults || [],
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
-  })
+    enableColumnResizing: true,
+  });
 
   async function search(query = "") {
     return await index
@@ -53,7 +54,7 @@ export function DataTable() {
         console.error("err:", err);
         return [];
       });
-  };
+  }
 
   useEffect(() => {
     (async () => setSearchResults(await search()))();
@@ -69,11 +70,12 @@ export function DataTable() {
             setQuery(event.target.value);
             search(event.target.value).then((results) => {
               setSearchResults(results);
-            })
+            });
           }}
           className="h-8 w-[150px] lg:w-[250px]"
         />
       </div>
+
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -81,15 +83,20 @@ export function DataTable() {
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead key={header.id}>
+                    <TableHead
+                      key={header.id}
+                      style={{
+                        width: `${header.column.columnDef.size}px`,
+                      }}
+                    >
                       {header.isPlaceholder
                         ? null
                         : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
                     </TableHead>
-                  )
+                  );
                 })}
               </TableRow>
             ))}
@@ -102,15 +109,24 @@ export function DataTable() {
                   data-state={row.getIsSelected() && "selected"}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    <TableCell
+                      key={cell.id}
+                      style={{ width: `${cell.column.columnDef.size}px` }}
+                    >
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
                     </TableCell>
                   ))}
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-24 text-center"
+                >
                   No results.
                 </TableCell>
               </TableRow>
@@ -137,5 +153,5 @@ export function DataTable() {
         </Button>
       </div>
     </div>
-  )
+  );
 }
